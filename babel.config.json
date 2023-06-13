@@ -1,0 +1,9 @@
+{
+    "presets": [["@babel/preset-react",{"runtime":"automatic"}]],
+    /*"plugins": ["react-native-web"]*/
+    "plugins": [["react-native-web"],["module-resolver", {
+        "alias": {
+          "^react-native$": "react-native-web"
+        }
+      }]]
+}
