@@ -1,12 +1,16 @@
 //https://reactnative.dev/docs/panresponder?syntax=functional
 
-import React, {useRef} from 'react';
-import {Animated, View, StyleSheet, PanResponder, Text} from 'react-native';
+import React, {useRef , useState} from 'react';
+import {Animated, View, StyleSheet, PanResponder, Text,TextInput} from 'react-native';
 
 const App = () => {
-  const pan = useRef(new Animated.ValueXY()).current;
+  const [count, setCount] = useState(0);
+  const [Boxs,appendBox] = useState([]);
 
-  const panResponder = useRef(
+  const createBox = (Boxs,appendBox,boxStyle)=>{
+    console.log("createBoxs");
+    let pan = useRef(new Animated.ValueXY()).current;
+    let panResponder = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: () => true,
       onPanResponderMove: Animated.event([null, {dx: pan.x, dy: pan.y}]),
@@ -14,18 +18,67 @@ const App = () => {
         pan.extractOffset();
       },
     }),
-  ).current;
+    ).current;
+    Boxs.push({pan:pan,panResponder:panResponder,boxStyle:boxStyle});
+  }
+  const renderBox = (BoxList)=>{
+    console.log("renderBoxs");
+    let allBox = [];
+    if(isNaN(count))return [];
+    if(BoxList)return [];
+    console.log("boxlist count:"+BoxList.count);
+    BoxList.array.forEach(box => {
+      allBox.push([
+        <Animated.View
+          style={{
+          transform: [{translateX: box.pan.x}, {translateY: box.pan.y}],
+          }}
+          {...box.panResponder.panHandlers}>
+          <View style={box.boxStyle} />
+        </Animated.View>
+      ])
+    });
+    return allBox;
+  }
+  const renderNormalBox = ()=>{
+    
+    let allBox = [];
+    if(isNaN(count))return [];
+    for(let i=0; i< count;i++){
+      allBox.push(<View style={styles.box1} />)
+    }
+    return allBox;
+  }
+  const manageBoxs = ()=>{
+    console.log("manageBoxs");
+    
+    let lenght = Boxs.count||0;
+    console.log("Boxs.count:"+lenght +"\ncount:"+count);
+    if(lenght==count) return 0;
+    if(lenght<count) {
+      for(let i=0; i<count-lenght;i++) createBox(Boxs,appendBox,styles.box1);
+    }
+    if(lenght>count) {
+      for(let i=0; i<lenght-count;i++) Boxs.pop();
+    }
+    return 1;
+  }
 
-  return (
-    <View style={styles.container}>
-      <Text style={styles.titleText}>Drag this box!</Text>
-      <Animated.View
+/*
+<Animated.View
         style={{
-          transform: [{translateX: pan.x}, {translateY: pan.y}],
+          transform: [{translateX: pan.x}, {translateY: pan.y}], backgroundColor: '#E6E6E6',
         }}
         {...panResponder.panHandlers}>
-        <View style={styles.box} />
+        <View style={styles.box1} />
       </Animated.View>
+*/
+  return (
+    <View style={styles.container}>
+      <Text style={styles.titleText} value={count}></Text>
+      <TextInput id='text_0' value={count} onChangeText={setCount} onSubmitEditing={()=>manageBoxs()} keyboardType="numeric" style={{backgroundColor: 'red'}}></TextInput>
+      {renderBox(Boxs)}
+
     </View>
   );
 };
@@ -41,10 +94,17 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     fontWeight: 'bold',
   },
-  box: {
+  box1: {
     height: 150,
     width: 150,
     backgroundColor: 'blue',
+    borderRadius: 5,
+    margin: 1,
+  },
+  box2: {
+    height: 150,
+    width: 150,
+    backgroundColor: 'red',
     borderRadius: 5,
   },
 });

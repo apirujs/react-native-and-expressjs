@@ -1,6 +1,6 @@
 import React from 'react';
 import { AppRegistry } from 'react-native';
-import App from './app.js';
+import App from './DragAndDrop.js';
 import Json_package from '../package.json';
 
 const appName= Json_package.name;
