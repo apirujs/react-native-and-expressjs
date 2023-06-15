@@ -1,87 +1,43 @@
-//https://reactnative.dev/docs/panresponder?syntax=functional
+import React, {Component,useState} from 'react';
+import {Animated, View, StyleSheet, PanResponder, Text} from 'react-native';
 
-import React, {useRef , useState} from 'react';
-import {Animated, View, StyleSheet, PanResponder, Text,TextInput} from 'react-native';
+class App extends Component {
+  pan = new Animated.ValueXY();
+  panResponder = PanResponder.create({
+    onMoveShouldSetPanResponder: () => true,
+    onPanResponderMove: Animated.event([
+      null,
+      {dx: this.pan.x, dy: this.pan.y},
+    ]),
+    onPanResponderRelease: () => {
+      this.pan.extractOffset();
+    },
+  });
 
-const App = () => {
-  const [count, setCount] = useState(0);
-  const [Boxs,appendBox] = useState([]);
 
-  const createBox = (Boxs,appendBox,boxStyle)=>{
-    console.log("createBoxs");
-    let pan = useRef(new Animated.ValueXY()).current;
-    let panResponder = useRef(
-    PanResponder.create({
-      onMoveShouldSetPanResponder: () => true,
-      onPanResponderMove: Animated.event([null, {dx: pan.x, dy: pan.y}]),
-      onPanResponderRelease: () => {
-        pan.extractOffset();
-      },
-    }),
-    ).current;
-    Boxs.push({pan:pan,panResponder:panResponder,boxStyle:boxStyle});
-  }
-  const renderBox = (BoxList)=>{
-    console.log("renderBoxs");
-    let allBox = [];
-    if(isNaN(count))return [];
-    if(BoxList)return [];
-    console.log("boxlist count:"+BoxList.count);
-    BoxList.array.forEach(box => {
-      allBox.push([
+
+  render() {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.titleText}>Drag this box!</Text>
         <Animated.View
           style={{
-          transform: [{translateX: box.pan.x}, {translateY: box.pan.y}],
+            transform: [{translateX: this.pan.x}, {translateY: this.pan.y}],
           }}
-          {...box.panResponder.panHandlers}>
-          <View style={box.boxStyle} />
+          {...this.panResponder.panHandlers}>
+          <View style={styles.box} />
         </Animated.View>
-      ])
-    });
-    return allBox;
+        <Animated.View
+          style={{
+            transform: [{translateX: this.pan.x}, {translateY: this.pan.y}],
+          }}
+          {...this.panResponder.panHandlers}>
+          <View style={styles.box} />
+        </Animated.View>
+      </View>
+    );
   }
-  const renderNormalBox = ()=>{
-    
-    let allBox = [];
-    if(isNaN(count))return [];
-    for(let i=0; i< count;i++){
-      allBox.push(<View style={styles.box1} />)
-    }
-    return allBox;
-  }
-  const manageBoxs = ()=>{
-    console.log("manageBoxs");
-    
-    let lenght = Boxs.count||0;
-    console.log("Boxs.count:"+lenght +"\ncount:"+count);
-    if(lenght==count) return 0;
-    if(lenght<count) {
-      for(let i=0; i<count-lenght;i++) createBox(Boxs,appendBox,styles.box1);
-    }
-    if(lenght>count) {
-      for(let i=0; i<lenght-count;i++) Boxs.pop();
-    }
-    return 1;
-  }
-
-/*
-<Animated.View
-        style={{
-          transform: [{translateX: pan.x}, {translateY: pan.y}], backgroundColor: '#E6E6E6',
-        }}
-        {...panResponder.panHandlers}>
-        <View style={styles.box1} />
-      </Animated.View>
-*/
-  return (
-    <View style={styles.container}>
-      <Text style={styles.titleText} value={count}></Text>
-      <TextInput id='text_0' value={count} onChangeText={setCount} onSubmitEditing={()=>manageBoxs()} keyboardType="numeric" style={{backgroundColor: 'red'}}></TextInput>
-      {renderBox(Boxs)}
-
-    </View>
-  );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -94,17 +50,10 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     fontWeight: 'bold',
   },
-  box1: {
+  box: {
     height: 150,
     width: 150,
     backgroundColor: 'blue',
-    borderRadius: 5,
-    margin: 1,
-  },
-  box2: {
-    height: 150,
-    width: 150,
-    backgroundColor: 'red',
     borderRadius: 5,
   },
 });
