@@ -1,60 +1,49 @@
-import React, {Component,useState} from 'react';
-import {Animated, View, StyleSheet, PanResponder, Text} from 'react-native';
+//https://reactnative.dev/docs/panresponder?syntax=functional
 
-class App extends Component {
-  pan = new Animated.ValueXY();
-  panResponder = PanResponder.create({
-    onMoveShouldSetPanResponder: () => true,
-    onPanResponderMove: Animated.event([
-      null,
-      {dx: this.pan.x, dy: this.pan.y},
-    ]),
-    onPanResponderRelease: () => {
-      this.pan.extractOffset();
-    },
-  });
+import React, {useRef , useState} from 'react';
+import {Animated, View, StyleSheet, PanResponder, Text,TextInput} from 'react-native';
 
+const App = () => {
+  const [count, setCount] = useState(0);
+  const [Boxs,appendBox] = useState([]);
 
+  
+  return (
+    <View style={styles.container}>
+      <View style={styles.panResponderLayer}>Layer1</View>
+      <View style={styles.propLayer}>Layer2</View>
 
-  render() {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.titleText}>Drag this box!</Text>
-        <Animated.View
-          style={{
-            transform: [{translateX: this.pan.x}, {translateY: this.pan.y}],
-          }}
-          {...this.panResponder.panHandlers}>
-          <View style={styles.box} />
-        </Animated.View>
-        <Animated.View
-          style={{
-            transform: [{translateX: this.pan.x}, {translateY: this.pan.y}],
-          }}
-          {...this.panResponder.panHandlers}>
-          <View style={styles.box} />
-        </Animated.View>
-      </View>
-    );
-  }
-}
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    padding: 5,
+    height: '100vh',
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    alignItems: 'flex-start',
+    direction: 'ltr',
+    flexWrap: 'wrap',
+    backgroundColor: '#9bff9b',
+    overflow: 'hidden',
   },
-  titleText: {
-    fontSize: 14,
-    lineHeight: 24,
-    fontWeight: 'bold',
-  },
-  box: {
-    height: 150,
-    width: 150,
-    backgroundColor: 'blue',
+  panResponderLayer:{
+    margin: '10px',
+    padding: 15,
+    flex: 0.7,
+    height: '90%',
+    backgroundColor: '#c0c0c0',
+    //borderWidth: 1,
     borderRadius: 5,
+    overflow: 'scroll',
+  },
+  propLayer:{
+    flex: 0.3,
+    padding: 15,
+    backgroundColor: '#FFFFFF',
   },
 });
 
