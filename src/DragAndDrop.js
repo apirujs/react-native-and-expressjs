@@ -4,34 +4,37 @@ import React, { useRef, useState, useEffect } from 'react';
 import { Animated, View, StyleSheet, PanResponder, Text, TextInput, Pressable } from 'react-native';
 
 const App = () => {
-  const circleRadius = useRef(15).current; 
+  const circleRadius = useRef(15).current;
   const [count, setCount] = useState(0);
   const [propertyView, setPropertyView] = useState([]);
   const [Boxs, setBoxs] = useState([{ ID: '01', offsetX: 0, offsetY: 0, cX: 0, cY: 0 }]);
   const [BoxFocusID, setBoxFocusID] = useState('');
   const pan = useRef(new Animated.ValueXY()).current;
-  const circleFocus = useRef(new Animated.ValueXY()).current;
-  const circleAnim = useRef(new Animated.ValueXY({x:0,y:0})).current;
-  const circleState = useRef(0).current;
+  //const circleFocus = useRef(new Animated.ValueXY()).current;
+  //const circleAnim = useRef(new Animated.ValueXY({ x: 0, y: 0 })).current;
+  //const [circleState, setCircleState] = useState(1);
 
-  const focusElement = (evt) => { 
+  const focusElement = (evt) => {
     console.log('id: ' + evt.currentTarget.id);
-    console.log('style: '+ JSON.stringify(evt.currentTarget.parentElement.style.left));
-    console.log('style: '+ JSON.stringify(evt.currentTarget.parentElement.style.top));
-    let Pleft = "", Ptop = "";
-    Pleft = evt.currentTarget.parentElement.style.left;
-    Pleft = Number(Pleft.replace('px',''));
-    Ptop = evt.currentTarget.parentElement.style.top;
-    Ptop = Number(Ptop.replace('px',''));
-    circleFocus.setValue({x:Pleft,y:Ptop});
-     
-    if(circleState.current){
-      Animated.parallel([
-        Animated.spring(circleAnim,{useNativeDriver:false,toValue:{x: circleRadius, y: circleRadius/2}}),
-        Animated.spring(circleFocus,{useNativeDriver:false,toValue:{x: Pleft-circleRadius/2, y: Ptop-circleRadius/2}})
-      ]).start();
+    //console.log('style: ' + JSON.stringify(evt.currentTarget.parentElement.style.left));
+    //console.log('style: ' + JSON.stringify(evt.currentTarget.parentElement.style.top));
+    /*let Pleft = "", Ptop = "";
 
-    }
+    if (circleState) {
+      Pleft = evt.currentTarget.parentElement.style.left;
+      Pleft = Number(Pleft.replace('px', ''));
+      Ptop = evt.currentTarget.parentElement.style.top;
+      Ptop = Number(Ptop.replace('px', ''));
+      circleFocus.setValue({ x: Pleft, y: Ptop });
+      Animated.parallel([
+        Animated.spring(circleAnim, { useNativeDriver: false, toValue: { x: circleRadius, y: circleRadius / 2 } }),
+        Animated.spring(circleFocus, { useNativeDriver: false, toValue: { x: Pleft - circleRadius / 2, y: Ptop - circleRadius / 2 } })
+      ]).start();
+      setCircleState(!circleState);
+    } else {
+      return;
+    }*/
+
   }
 
   const panResponder = React.useRef(
@@ -100,18 +103,18 @@ const App = () => {
         <View style={styles.LayerHeader}><Text>View</Text></View>
         <View style={styles.viewLayer} {...panResponder.panHandlers}>
           <View>
-            <Animated.View style={[pan.getLayout(),{width:'auto'}]}>
-              <Pressable id='01' onPress={(evt)=>focusElement(evt)} style={styles.box}>
+            <Animated.View style={[pan.getLayout(), { width: 'auto' }]}>
+              <Pressable id='01' onPressIn={(evt) => unfocusElement(evt)} onPressOut={(evt) => focusElement(evt)} style={styles.box}>
                 <View style={{ width: 'auto', height: '100%' }} />
               </Pressable>
             </Animated.View>
-            <Animated.View style={[circleFocus.getLayout(),{
+            <Animated.View style={[circleFocus.getLayout(), {
               width: circleAnim.x,
               height: circleAnim.x,
               borderRadius: circleAnim.y,
               backgroundColor: '#e3d0aa',
               position: 'absolute',
-            }]} /> 
+            }]} />
           </View>
         </View>
       </View>
