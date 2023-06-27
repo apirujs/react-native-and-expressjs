@@ -1,21 +1,21 @@
 //https://reactnative.dev/docs/panresponder?syntax=functional
 
 import React, { useRef, useState, useEffect } from 'react';
-import { Animated, View, StyleSheet, PanResponder, Text, TextInput, Pressable } from 'react-native';
+import { Animated, View, StyleSheet, PanResponder, Text, TextInput, Pressable ,Button} from 'react-native';
 
 const convertProp = (props) => {
   let supportFeature = [];
   let returnList = [];
   //console.log(props);
   props.map((item, index) => {
-      if (typeof (item) == typeof ({})) {
-        //console.log(item);
-        Object.keys(item).forEach((propKey) => {
-          if (!supportFeature.includes(propKey)) {
-            returnList.push(<li key={returnList.count}>{propKey} : {item[propKey]}</li>);
-          }
-        });
-      }
+    if (typeof (item) == typeof ({})) {
+      //console.log(item);
+      Object.keys(item).forEach((propKey) => {
+        if (!supportFeature.includes(propKey)) {
+          returnList.push(<li key={returnList.count}>{propKey} : {item[propKey]}</li>);
+        }
+      });
+    }
   });
   //console.log(returnList);
   return returnList;
@@ -23,16 +23,46 @@ const convertProp = (props) => {
 
 const App = () => {
   const [propertyView, setPropertyView] = useState([]);
-  const [Boxs, setBoxs] = useState([{ id: '0', offsetX: 0, offsetY: 0, cX: 0, cY: 0, prop: [{ backgroundColor: '#61dafb', width: 80, height: 80, borderRadius: 4, }], highlight: {} }]);
+  const [Boxs, setBoxs] = useState([
+   /* { id: '0',pan:{}, offsetX: 0, offsetY: 0, cX: 0, cY: 0, prop: [{ backgroundColor: '#61dafb', width: 80, height: 80, borderRadius: 4, }], highlight: {} },
+    { id: '1',pan:{}, offsetX: 0, offsetY: 0, cX: 0, cY: 0, prop: [{ backgroundColor: '#61dafb', width: 80, height: 80, borderRadius: 4, }], highlight: {} }
+*/
+  ]);
   const BoxFocusID = useRef(-1);
-  const pan = useRef(new Animated.ValueXY()).current;
+  //const pan = useRef(new Animated.ValueXY()).current;
   const [highlightStyle, setHighlightStyle] = useState({});
-  const enableDrag = useRef(false);
+  //const [enableDrag,setEnableDrag] = useState(false);
   const count = useRef(-1);
 
+  const genBoxsComponent = (Boxs, focusID) => {
+    let components = [];  
+    let pressableTag = (Box ,styles,index) => {
+      return (<Pressable style={styles} id={'P'+Box.id} onPress={(evt) => focusElement(evt, index)} >
+        <View id={Box.id} style={{ width: 'auto', height: '100%' }} />
+      </Pressable>)
+    }
+  
+    //let isIDValid = (Boxs[focusID] != undefined);
+    Boxs.map((Box, index) => {
+      if (Box.id == focusID) {
+        components.push (<Animated.View id={'B'+Box.id} style={[Box.pan.getLayout(),{width:0}]}>
+          {pressableTag(Box,[Box.prop, Box.highlight] ,Box.id)}
+        </Animated.View>)
+      }else{
+        components.push (<Animated.View id={'B'+Box.id} style={[Box.pan.getLayout(),{width:0}]}> 
+          {pressableTag(Box,[Box.prop],Box.id)}
+        </Animated.View>)
+      }
+  
+    })
+  
+    return components;
+  }
+
   useEffect(() => {
-    count.current = count.current +1;
-  })
+    //count.current = count.current + 1;
+    //console.log('drag: '+enableDrag);
+  },[]);
 
   const focusElement = (evt, index) => {
     //console.log('id: ' + evt.currentTarget.id);
@@ -42,7 +72,7 @@ const App = () => {
     //console.log(BoxFocusID);
     Boxs[index].highlight = { borderWidth: 1, borderColor: 'red' };
     setPropertyView(convertProp(Boxs[index].prop));
-    enableDrag.current =false;
+    //setEnableDrag(false);
   }
 
   const panResponder = useRef(
@@ -52,35 +82,41 @@ const App = () => {
       onMoveShouldSetPanResponder: (evt, gestureState) => true,
 
       onPanResponderGrant: (evt, gestureState) => {
-        if(!enableDrag.current){
-            setPropertyView([]);
-            if (Boxs[BoxFocusID.current] == undefined) return;
-            let upDateborderWidth = (Boxs[BoxFocusID.current].prop.borderWidth == undefined)? 0 : Boxs[BoxFocusID.current].prop.borderWidth;
-            Boxs[BoxFocusID.current].highlight = { borderWidth:upDateborderWidth};
-            BoxFocusID.current = -1;
+        //console.log("enable "+enableDrag);
+        if (Boxs[evt.target.id] == undefined) {
+          setPropertyView([]);
+          //if (Boxs[evt.target.id] == undefined) return;
+          //let upDateborderWidth = (Boxs[BoxFocusID.current].prop.borderWidth == undefined) ? 0 : Boxs[BoxFocusID.current].prop.borderWidth;
+          //Boxs[BoxFocusID.current].highlight = { borderWidth: upDateborderWidth };
+          //style={[pan.getLayout(), { width: 0 }]}
+          BoxFocusID.current = -1;
+        }else{
+
         }
 
       },
       onPanResponderMove: (evt, gestureState) => {
-        //console.log(BoxFocusID.current);
+        //console.log();
+      
         //console.log(enableDrag.current);
-        if (Boxs[BoxFocusID.current] == undefined) return;
-        if (!enableDrag.current) return;
+        if (Boxs[evt.target.id] == undefined) return;
+        //if (!enableDrag) return;
         console.log('Move');
-        pan.setValue({ x: gestureState.dx + Boxs[BoxFocusID.current].offsetX, y: gestureState.dy + Boxs[BoxFocusID.current].offsetY })
+        Boxs[evt.target.id].pan.setValue({ x: gestureState.dx + Boxs[evt.target.id].offsetX, y: gestureState.dy + Boxs[evt.target.id].offsetY })
+
       },
       onPanResponderTerminationRequest: (evt, gestureState) =>
         true,
       onPanResponderRelease: (evt, gestureState) => {
-        if (Boxs[BoxFocusID.current] == undefined) return;
-        if (!enableDrag.current) return;
-        Boxs[BoxFocusID.current].offsetX = Boxs[BoxFocusID.current].offsetX + gestureState.dx;
-        Boxs[BoxFocusID.current].offsetY = Boxs[BoxFocusID.current].offsetY + gestureState.dy;
+        if (Boxs[evt.target.id] == undefined) return;
+        //if (!enableDrag) return;
+        Boxs[evt.target.id].offsetX = Boxs[evt.target.id].offsetX + gestureState.dx;
+        Boxs[evt.target.id].offsetY = Boxs[evt.target.id].offsetY + gestureState.dy;
       },
       onPanResponderTerminate: (evt, gestureState) => {
         console.log("Terminated");
       },
-    }),
+    },(e)=>console.log('f'))
   ).current;
 
   return (
@@ -89,13 +125,7 @@ const App = () => {
         <View style={styles.LayerHeader}><Text>View</Text></View>
         <View style={styles.viewLayer} {...panResponder.panHandlers}>
           <View>
-            {Boxs.map((Box, index) =>
-              <Animated.View style={[pan.getLayout(), { width: 'auto' }]}>
-                <Pressable id={Box.id} onPressIn={() => enableDrag.current=true} onPress={(evt) => focusElement(evt, index)} style={[Box.prop, Box.highlight]}>
-                  <View style={{ width: 'auto', height: '100%' }} />
-                </Pressable>
-              </Animated.View>
-            )}
+            {genBoxsComponent(Boxs, BoxFocusID.current)}
           </View>
         </View>
       </View>
@@ -103,9 +133,11 @@ const App = () => {
       <View style={styles.propLayer}>
         <View style={styles.LayerHeader}><Text>Properties</Text></View>
         <View style={styles.LayerDetail}>
-          <Text>{propertyView}</Text>
+          <Button onPress={()=>{return Boxs.push({ id: Boxs.count+1,pan: new Animated.ValueXY(), offsetX: 0, offsetY: 0, cX: 0, cY: 0, prop: [{ backgroundColor: '#61dafb', width: 80, height: 80, borderRadius: 4, }], highlight: {} })}} title='Add Box'></Button>
           <Text>BoxFocusID: {BoxFocusID.current}</Text>
           <Text>render: {count.current}</Text>
+          <Text> </Text>
+          <Text>{propertyView}</Text>
         </View>
       </View>
 
