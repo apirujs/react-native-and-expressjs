@@ -1,14 +1,16 @@
 import React from 'react';
-import {BrowserRouter,Routes,Route,Link} from 'react-router-dom';
-import Home from './QR.js';
+import {BrowserRouter,Routes,Route,Navigate,Link} from 'react-router-dom';
+import QRPage from './QR.js';
 import ContactPage from './ContactPage.js';
+import Dijkstra from './Dijkstra.js';
 
 
 const App = () => {
   return (
     <BrowserRouter>
       <Routes>
-        <Route exact path="/" element={<Home />} />
+        <Route exact path="/" element={<Dijkstra />} />
+        <Route path="/QrCode"  element={<QRPage />} />
         <Route path="/contact"  element={<ContactPage />} />
       </Routes>
     </BrowserRouter>

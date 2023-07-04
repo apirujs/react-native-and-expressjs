@@ -7,6 +7,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#F5FCFF',
   },
+  MenuHeader:{
+    flexDirection:'column',
+    backgroundColor: 'white',
+    padding: 5,
+    
+  },
   heading: {
     fontSize: 24,
     fontWeight: 'bold',

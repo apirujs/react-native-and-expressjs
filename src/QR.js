@@ -2,9 +2,11 @@ import { View, Text } from 'react-native';
 import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import styles from './StyleSheet.js';
+import jsQR from "jsqr";
 
-const Home = () => {
+const QRPage = () => {
   const [count, setCount] = useState(0);
+  const [qrCode, setqrCode] = useState('');
 
   // controls if media input is on or off
   const [playing, setPlaying] = useState(false);
@@ -19,7 +21,7 @@ const Home = () => {
   // controls the video DOM element
   const webcamVideo = useRef();
 
-  const canvas = useRef();
+  const canvas = useRef(document.createElement('canvas'));
 
   // get the user's media stream
   const startStream = async () => {
@@ -36,27 +38,35 @@ const Home = () => {
     setPlaying(true);
   };
 
+
   useEffect(() => {
     setTimeout(() => {
       setCount((count) => count + 1);
     }, 1000);
-    if (stream == null) return;
+
+    if ((stream == null) || (canvas.current == undefined)) return;
     //console.log("Prosessing...");
     const track = stream.getVideoTracks()[0];
     const context = canvas.current.getContext("2d");
+    
     let width = track.getSettings().width, height = track.getSettings().height;
-    if (height && width) {
-      canvas.width = width;
-      canvas.height = height;
-      context.drawImage(webcamVideo.current, 0, 0, 0, 0);
+    context.width = canvas.current.width = width;
+    context.height = canvas.current.height = height;
 
-      //const data = canvas.toDataURL("image/png");
+    if (height && width) {
+      
+      context.drawImage(webcamVideo.current, 0, 0, width, height);
+      const img = context.getImageData(0, 0, width, height);
+      //console.log(img.data instanceof Uint8ClampedArray, img.data);
+      setqrCode(jsQR(img.data, width, height));
+      if (qrCode) {
+        console.log("Found QR code", qrCode.data);
+      }
       //photo.setAttribute("src", data);
     }
 
-
-    console.log("h:" + track.getSettings().height);
-    console.log("w:" + track.getSettings().width);
+    //console.log("h:" + track.getSettings().height);
+    //console.log("w:" + track.getSettings().width);
   }, [count]);
 
   // stops the user's media stream
@@ -68,8 +78,7 @@ const Home = () => {
 
   // enable/disable audio tracks in the media stream
   const toggleAudio = () => {
-    setAudio(!audio);
-    stream.getAudioTracks()[0].enabled = audio;
+    
   };
 
   // enable/disable video tracks in the media stream
@@ -81,14 +90,14 @@ const Home = () => {
   return (
     <div className="container">
       <video style={{ width: 640, height: 480 }} ref={webcamVideo} autoPlay playsInline></video>
-      <canvas style={{ width: 640, height: 480 }} ref={canvas}></canvas>
+      {/*<canvas style={{ width: 640, height: 480 }} ref={canvas} visible={false}></canvas>*/}
       <button
         onClick={playing ? stopStream : startStream}>
         Start webcam
       </button>
 
-      <button onClick={toggleAudio}>Toggle Sound</button>
       <button onClick={toggleVideo}>Toggle Video</button>
+      <Text>{count}</Text>
     </div>
   );
 
@@ -107,4 +116,4 @@ const Home = () => {
   );*/
 }
 
-export default Home;
+export default QRPage;
