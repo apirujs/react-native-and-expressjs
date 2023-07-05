@@ -9,7 +9,7 @@ const App = () => {
   return (
     <BrowserRouter>
       <Routes>
-        <Route exact path="/" element={<Dijkstra />} />
+        <Route exact path="/" element={<Dijkstra/>} />
         <Route path="/QrCode"  element={<QRPage />} />
         <Route path="/contact"  element={<ContactPage />} />
       </Routes>
