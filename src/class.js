@@ -1,6 +1,7 @@
 export class Point {
-    constructor(name,x, y,floor,connectPoint) {
+    constructor(index,name,x, y,floor,connectPoint) {
       this.name = name;
+      this.index = index;
       this.x = x;
       this.y = y;
       this.floor =floor;

@@ -10,11 +10,13 @@ const Dijkstra = () => {
   const canvas = useRef();
   const [pins, setPins] = useState([]);
   const [renderFloor, setFloor] = useState(0);
-  const [renderCount, triggerRender] = useState(0);
-  const [temp, setTemp] = useState([]);
+  const [renderCount, triggerRender] = useState(false);
+  const [temp, setTemp] = useState();
+  const [Properties, setProperties] = useState([]);
   const pinImg = { src: "/pin.png", width: 40, height: 40 };
-  const windowWidth = Dimensions.get('window').width;
-  const windowHeight = Dimensions.get('window').height;
+  const [selectState, setSelect] = useState(false);
+  //const windowWidth = Dimensions.get('window').width;
+  //const windowHeight = Dimensions.get('window').height;
 
   const canvasClickTrigger = useRef(
     PanResponder.create({
@@ -26,8 +28,14 @@ const Dijkstra = () => {
         const canvasRect = canvas.current.getBoundingClientRect();
         console.log(evt.target.id);
         if (pins[evt.target.id] == undefined) {
-          createPin((pins.length), gestureState.x0 - canvasRect.x, gestureState.y0 - canvasRect.y, renderFloor, []);
+          if (!selectState)
+            setProperties(createPin(pins, '', gestureState.x0 - canvasRect.x, gestureState.y0 - canvasRect.y, renderFloor, []));
+          else {
+
+          }
         } else {
+          setProperties(pins[evt.target.id]);
+          //triggerRender(!renderCount);
           /*const ctx = canvas.current.getContext('2d');
           let clickX=gestureState.x0 - canvasRect.x, clickY = gestureState.y0 - canvasRect.y;
           // set line stroke and line width
@@ -74,14 +82,15 @@ const Dijkstra = () => {
     }),
   ).current;
 
-  const createPin = (name, x, y, floor, weightConnects) => {
+  const createPin = (pinPool, name, x, y, floor, weightConnects) => {
     //console.log('before: '+JSON.stringify(pins));
-    let pin = new Point(name, x, y, floor, []);
+    let pin = new Point(pinPool.length, name, x, y, floor, []);
     weightConnects.forEach(weight => {
       pin.connectPoint.push(weight);
     });
-    pins.push(pin)
-    triggerRender(pins.length);
+    pinPool.push(pin)
+    triggerRender(!renderCount);
+    return pin;
     //console.log('After: '+JSON.stringify(pins));
     //console.log('type '+typeof(pins));
     //console.log('pin created '+JSON.stringify(pin));
@@ -104,32 +113,33 @@ const Dijkstra = () => {
   }
 
   return (
-      <View id={"container"} style={styles.container} >
+    <View id={"container"} style={styles.container} >
 
-        <View style={styles.menu}>
-          <MenuButton onPress={() => { Navigate('/QrCode') }} style={styles.menuButton} title='QR code' />
-          <MenuButton style={styles.menuButton} title='Dijkstra' />
-          <MenuButton onPress={() => { Navigate('/contact') }} style={styles.menuButton} title='Drag&Drop' />
-        </View>
-        <View style={styles.body}>
-          <View id='panResponder' {...canvasClickTrigger.panHandlers} style={styles.canvasStyles}>
-            <canvas ref={canvas} width='400' height='200' />
-            {renderPins()}
-          </View>
-          <View style={styles.PropStyles}>
-            <View>Floor</View>
-            <View>Properties</View>
-            <View></View>
-          </View>
-        </View>
-
+      <View style={styles.menu}>
+        <MenuButton onPress={() => { Navigate('/QrCode') }} style={styles.menuButton} title='QR code' />
+        <MenuButton style={styles.menuButton} title='Dijkstra' />
+        <MenuButton onPress={() => { Navigate('/contact') }} style={styles.menuButton} title='Drag&Drop' />
       </View>
+      <View style={styles.body}>
+        <View id='panResponder' {...canvasClickTrigger.panHandlers} style={styles.canvasStyles}>
+          <canvas ref={canvas} width='800' height='400' />
+          {renderPins()}
+        </View>
+        <View style={styles.PropStyles}>
+          <View style={styles.LayerHeader}><Text>Floor</Text></View>
+          <View style={styles.LayerHeader}><Text>Properties</Text></View>
+          <View style={styles.LayerDetail}>{JSON.stringify(Properties)}</View>
+
+        </View>
+      </View>
+
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    width:Dimensions.get('window').width,
+    width: Dimensions.get('window').width,
     flexDirection: 'column',
     alignItems: 'flex-start',
     justifyContent: 'flex-start',
@@ -157,10 +167,29 @@ const styles = StyleSheet.create({
   },
   PropStyles: {
     flex: 1,
+    margin: 5,
+    width: '100%',
     flexDirection: 'column',
     justifyContent: 'space-around',
     alignItems: 'flex-end',
 
+  },
+  LayerDetail: {
+    margin: 3,
+    width: 'auto',
+    backgroundColor: '#d0f5ff',
+    fontSize: 16,
+    //fontFamily: './Bai_Jamjuree/BaiJamjuree-LightItalic.ttf',
+    textAlign: 'left',
+  }
+  ,
+  LayerHeader: {
+    margin: 3,
+    backgroundColor: 'white',
+    fontSize: 18,
+    textAlign: 'left',
+    borderBottomWidth: 0.1,
+    borderColor: '#d0f5ff'
   },
   menuButton: {
     width: 80,
