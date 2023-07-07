@@ -22,6 +22,7 @@ const MenuButton = ({ onPress, style, title, onDuration }) => {
     useNativeDriver: false,
   });
 
+
   const fadeOut = Animated.timing(fadeAnim, {
     toValue: 0,
     duration:
@@ -67,9 +68,9 @@ const MenuButton = ({ onPress, style, title, onDuration }) => {
   }, []);
 
   return (
-    <Animated.View style={[ style, moveTopAnim.getLayout(), {opacity: fadeAnim }]} >
+    <Animated.View style={[moveTopAnim.getLayout(), {opacity: fadeAnim }]} >
 
-      <Pressable onPress={() => { cOnpress(onPress); }} onHoverIn={()=>Animated.sequence([moveTopOn]).start} onHoverOut={()=>moveTopOut.start} >
+      <Pressable style={style} onPress={() => {return cOnpress(onPress); }} onHoverIn={()=>Animated.sequence([moveTopOn]).start} onHoverOut={()=>moveTopOut.start} >
 
         <Text style={typeof StyleSheet.flatten(style).Text === "undefined" ? cdefault.Text : StyleSheet.flatten(style).Text}>{title}</Text>
 

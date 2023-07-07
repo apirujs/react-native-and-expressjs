@@ -8,6 +8,14 @@ export class Point {
       this.connectPoint =connectPoint;
     } 
   }
+
+  export class ClickEvents{
+    constructor(type,prop){
+      this.type = type;
+      this.prop = prop;
+    }
+  }
+
 export class Node{
   constructor(name,eva,connectNode){
     this.name = name;
@@ -23,7 +31,7 @@ export default function Dijkstra(allNode,startNode,endNode){
     if(node.name==startNode.name)node.eva=0;
     else node.eva = Number.POSITIVE_INFINITY;
   });
-  //console.log("done1");
+  console.log("done1");
   
   while(true){
     SN[0].connectNode.forEach(path=>{
@@ -32,21 +40,21 @@ export default function Dijkstra(allNode,startNode,endNode){
         path[1].eva =SN[0].eva+path[0];
         path[1].cf = SN[0].name;
       }
-      //console.log(SN[0].name);
+      console.log(SN[0].name);
     });
     SN.shift();
     if(SN.length==0){
-      //console.log(SN.length);
+      console.log(SN.length);
       var currentNode=endNode.name;
       shortPath.push(endNode.name);
       //var T=true;
       while(true){
-        //console.log(currentNode);
+        console.log(currentNode);
         allNode.forEach(node=>{
           if(node.name==currentNode){
             shortPath.push(node.cf);
             currentNode=node.cf;
-            //console.log(node.name);
+            console.log(node.name);
           }
         });
         if(currentNode==startNode.name)return shortPath;
