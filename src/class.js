@@ -26,42 +26,50 @@ export class Node{
 }
 export default function Dijkstra(allNode,startNode,endNode){
   var SN=[startNode];
+  var temp = allNode;
   var shortPath=[];
   allNode.forEach(node=>{
     if(node.name==startNode.name)node.eva=0;
     else node.eva = Number.POSITIVE_INFINITY;
   });
-  console.log("done1");
+  console.log('init done');
+  //console.log(SN);
   
-  while(true){
+
+  while(allNode.length != 0){
     SN[0].connectNode.forEach(path=>{
-      SN.push(path[1]);
+      if(allNode.includes(path[1]))SN.push(path[1]);
       if(path[1].eva>SN[0].eva+path[0]){
         path[1].eva =SN[0].eva+path[0];
         path[1].cf = SN[0].name;
       }
-      console.log(SN[0].name);
+      console.log('SN name '+SN[0].name);
     });
+    //console.log("before "+SN.length);
+    allNode = allNode.filter(item=> item!=allNode[allNode.findIndex(item=>item.name==SN[0].name)]);
     SN.shift();
+    //console.log("After"+ SN.length);
     if(SN.length==0){
-      console.log(SN.length);
-      var currentNode=endNode.name;
-      shortPath.push(endNode.name);
-      //var T=true;
-      while(true){
-        console.log(currentNode);
-        allNode.forEach(node=>{
-          if(node.name==currentNode){
-            shortPath.push(node.cf);
-            currentNode=node.cf;
-            console.log(node.name);
-          }
-        });
-        if(currentNode==startNode.name)return shortPath;
-      }
+      //console.log(SN.length);
+      
       break;
     }
   }
+  var currentNode=endNode;
+      
+      var overflow=100;
+      while(overflow>0){
+        //console.log(currentNode);
+        shortPath.push(currentNode.name);
+        currentNode = temp.find(node=>node.name==currentNode.cf);
+        console.log("path : "+shortPath);
+          
+        if(currentNode.name==startNode.name){
+          shortPath.push(startNode.name);
+          return shortPath;
+        }
+        else overflow--;
+      }
 }
 
 

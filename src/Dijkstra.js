@@ -2,15 +2,18 @@ import { View, Text, ScrollView, StyleSheet, PanResponder, Dimensions } from 're
 import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import MenuButton from './custom.js';
-import { Point, ClickEvents , Node} from './class.js';
+import { Point, ClickEvents, Node } from './class.js';
 import Dijkstra from './class.js';
-import { Button } from 'react-native-web';
+//import { Button } from 'react-native-web';
 //const img1 = new Image();
 
 const DijkstraPage = () => {
 
   /*___________________________________________________________________________________________________________*/
   const pinImg = { src: "/pin.png", width: 40, height: 40 };
+  const map1Img = { src: "/map1.png", width: 800, height: 400 };
+  const map2Img = { src: "/map2.png", width: 800, height: 400 };
+
 
   /*___________________________________________________________________________________________________________*/
   const Navigate = useNavigate();
@@ -24,8 +27,10 @@ const DijkstraPage = () => {
   const [toolButton, setToolButton] = useState('Select mode');
   const [focusPin, setFocusPin] = useState();
   const [appendPin, setAppendPin] = useState(false);
-  const [startPoint,setStartPoint] = useState();
-  const [endPoint,setEndPoint] = useState(); 
+  const [startPoint, setStartPoint] = useState();
+  const [endPoint, setEndPoint] = useState();
+  var shortPaths = undefined;
+  //var [count,setcount] = use 
 
   /*___________________________________________________________________________________________________________*/
   const canvas = useRef();
@@ -63,23 +68,7 @@ const DijkstraPage = () => {
     }
 
 
-    /*if(canvas.current != undefined){      //load image
-      console.log('click');
-      const ctx = canvas.current.getContext('2d');
-      //ctx.width = canvas.current.width = 400;
-      //ctx.height = canvas.current.height = 300;
-      //const img1 = new Image();
-      //img1.src = './pin.png';
-      //img1.onload = function () {
-        //draw background image
-        
-      //ctx.drawImage(pinImage, gestureState.x0, gestureState.y0,30,30);
-        //draw a box over the top
-        //ctx.fillStyle = "rgba(200, 0, 0, 0.5)";
-        //ctx.fillRect(0, 0, 500, 500);
-      //};
-      
-    }*/
+
 
   };
   /*________________________________________อย่ายุ่ง___________________________________________________________________*/
@@ -125,6 +114,10 @@ const DijkstraPage = () => {
   /*_______________________________________Effect____________________________________________________________________*/
   //init
   useEffect(() => {
+    drawMap(0);
+  }, []);
+
+  useEffect(() => {
     setProperties(focusPin);
   }, [focusPin]);
 
@@ -155,18 +148,52 @@ const DijkstraPage = () => {
     if (focusPin == null) return;
     connectPins.forEach((connectPin) => {
       pins[focusPin.index].connectPoint.push([1, connectPin.index]);
-      console.log('append ' + [1, connectPin.index]);
+      connectPin.connectPoint.push([1, pins[focusPin.index].index]);
+      //console.log('append ' + [1, connectPin.index]);
     });
     setTemp([]);
+    setAppendPin(!appendPin);
     triggerRender(!renderCount);
   }
 
-  const drawLine = (startPin, toPin) => {
+  const changFloor = (toFloor) => {
+    setFloor(toFloor);
+    if (canvas == undefined) return;
+    const context = canvas.current.getContext('2d');
+    context.clearRect(0, 0, canvas.current.width, canvas.current.height);
+    drawMap(toFloor);
+  }
+
+  const drawMap = (floor) => {
+    if (canvas.current != undefined) {      //load image
+
+      const ctx = canvas.current.getContext('2d');
+      ctx.width = canvas.current.width = 800;
+      ctx.height = canvas.current.height = 400;
+      const img1 = new Image();
+      if (floor == 0)
+        img1.src = './map1.png';
+      if (floor == 1)
+        img1.src = './map2.png';
+      img1.onload = function () {
+        //draw background ima
+        ctx.drawImage(img1, 0, 0, 800, 400);
+        //draw a box over the top
+        //ctx.fillStyle = "rgba(200, 0, 0, 0.5)";
+        //ctx.fillRect(0, 0, 500, 500);
+      };
+
+    }
+  }
+
+  const drawLine = (color, startPin, toPin) => {
+    console.log("draw");
+    if (canvas.current == undefined) return;
     const ctx = canvas.current.getContext('2d');
     //let clickX = gestureState.x0 - canvasRect.x, clickY = gestureState.y0 - canvasRect.y;
     // set line stroke and line width
-    ctx.strokeStyle = '#c0c0c0';
-    ctx.fillStyle = '#c0c0c0';
+    ctx.strokeStyle = color;
+    ctx.fillStyle = color;
     ctx.lineWidth = 5;
     let circleRadius = 5;
 
@@ -185,16 +212,28 @@ const DijkstraPage = () => {
     ctx.fill();
   }
 
-  const navigate = ()=>{
-    if(startPoint == undefined || endPoint == undefined)return;
+  const navigate = () => {
+    if (startPoint == undefined || endPoint == undefined) return;
     let AllNode = [];
-    let startNode = new Node(startPoint.index,0,startPoint.connectPoint);
-    let endNode = new Node(endPoint.index,0,endPoint.connectPoint);
-    console.log(pins);
-    pins.forEach((pin)=>{
-      AllNode.push(new Node(pin.index,0,pin.connectPoint));
+
+
+    //console.log(pins);
+    pins.forEach((pin) => {
+      AllNode.push(new Node(pin.index, 0, []));
     });
-    console.log(Dijkstra(AllNode,startNode,endNode));
+    pins.forEach((pin) => {
+      pin.connectPoint.forEach((connectPin) => {
+        AllNode.find(item => item.name == pin.index).connectNode.push([connectPin[0], AllNode.find(item => item.name == connectPin[1])]);
+      });
+    });
+
+    let startNode = AllNode.find(item => item.name == startPoint.index);
+    let endNode = AllNode.find(item => item.name == endPoint.index);
+    //console.log(AllNode);
+    let result = Dijkstra(AllNode, startNode, endNode);
+    setFocusPin({ Path: result });
+    //shortPaths = result;
+    //console.log(shortPaths);
   }
 
   /*_____________________________________Render______________________________________________________________________*/
@@ -210,9 +249,28 @@ const DijkstraPage = () => {
           if (focusPin.index == element.index) borderStyle = { borderColor: 'red', borderWidth: 3 }; else borderStyle = {};
         if (appendPin && temp.includes(element)) borderStyle = { borderColor: 'yellow', borderWidth: 1 };
 
-        element.connectPoint.forEach((connectPinIndex) => {
-          drawLine(element, pins[connectPinIndex[1]]);
-        })
+
+        if (focusPin != undefined) {
+          if (focusPin.Path != undefined) {
+            let shortPaths = focusPin.Path;
+            //console.log(element.index + String(shortPaths.includes(element.index)));
+
+            if (shortPaths.includes(element.index)) {
+              //console.log('fuck'+shortPaths);
+              //console.log("index"+ shortPaths.findIndex(item=> item == element.index));
+              let focusShortPathIndex = shortPaths.findIndex(item => item == element.index);
+              if (focusShortPathIndex > 0) {
+                //console.log(pins.find(item=> item.index == shortPaths[focusShortPathIndex-1]));
+                drawLine('#53a9ff', element, pins.find(item => item.index == shortPaths[focusShortPathIndex - 1]));
+
+              }
+            }
+          } else {
+            element.connectPoint.forEach((connectPinIndex) => {
+              drawLine('#c0c0c0', element, pins[connectPinIndex[1]]);
+            })
+          }
+        }
 
         renderResult.push(<View id={'V' + element.index} style={[borderStyle, { top: element.y - pinImg.height, left: element.x - (pinImg.width / 2), position: 'absolute' }]}>
           <img id={element.index} width={pinImg.width} height={pinImg.height} src={pinImg.src} alt="image" />
@@ -259,18 +317,18 @@ const DijkstraPage = () => {
         </View>
         <View style={styles.PropStyles}>
           <View style={styles.ModeLayer}> {activeMode()} </View>
-          <View style={[styles.LayerHeader, {justifyContent:'center', alignItems: 'center', flexDirection: 'row' }]}>
+          <View style={[styles.LayerHeader, { justifyContent: 'center', alignItems: 'center', flexDirection: 'row' }]}>
             <Text>Floor: {renderFloor}</Text>
-            <MenuButton style={styles.floorButton} title='0' onPress={() => setFloor(0)} />
-            <MenuButton style={styles.floorButton} title='1' onPress={() => setFloor(1)} />
+            <MenuButton style={styles.floorButton} title='0' onPress={() => changFloor(0)} />
+            <MenuButton style={styles.floorButton} title='1' onPress={() => changFloor(1)} />
           </View>
           <View style={styles.propButtonLayer}>
-            <View style={{ flexDirection:'row' }}>
+            <View style={{ flexDirection: 'row' }}>
               <MenuButton style={styles.propButton} title='Start location' onPress={() => setStartPoint(focusPin)} />
               <MenuButton style={styles.propButton} title='To destination' onPress={() => setEndPoint(focusPin)} />
               <MenuButton style={styles.propButton} title='Navigate' onPress={() => navigate()} />
             </View>
-            <View style={{ flexDirection:'row' }}>
+            <View style={{ flexDirection: 'row' }}>
               <MenuButton style={styles.propButton} title={toolButton} onPress={() => { if (toolButton != 'Create Mode') setToolButton('Create Mode'); else setToolButton('Select Mode'); setSelect(!selectState) }} />
               <MenuButton style={styles.propButton} title='Clear Selected' onPress={() => setTemp([])} />
               <MenuButton style={styles.propButton} title='Edit Pins' onPress={() => setAppendPin(!appendPin)} />
@@ -312,8 +370,8 @@ const styles = StyleSheet.create({
   },
   canvasStyles: {
     alignSelf: 'center',
-    width:'800px' ,
-    height:'100%',
+    width: '800px',
+    height: '100%',
     borderWidth: 1,
     borderColor: '#b5daff',
     margin: 5,
@@ -388,16 +446,16 @@ const styles = StyleSheet.create({
     color: 'red',
     alignItems: 'center',
   }
-  ,floorButton:
-  { 
-    backgroundColor: '#5eaeff' ,
-    margin: 5 ,
+  , floorButton:
+  {
+    backgroundColor: '#5eaeff',
+    margin: 5,
     borderRadius: 3,
-    height: 20 , 
+    height: 20,
     width: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    Text:{ color:'white',fontSize:16},
+    Text: { color: 'white', fontSize: 16 },
   },
 
 });
